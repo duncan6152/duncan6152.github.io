@@ -151,31 +151,14 @@ library(randomForest)</code></pre>
 
 modFit &lt;- randomForest(classe ~ ., data=trainAcc)
 
-<<<<<<< 8e3cfdba00a2858bb03da5a7e2fa034df02b0426
 # The predictions for the test data
 prf &lt;- predict(modFit,testAcc)
-=======
-print(modFit$confusion)</code></pre>
-<pre><code>##      A    B    C    D    E class.error
-## A 5386   29   75   82    8  0.03476703
-## B  150 3490   80   31   46  0.08085331
-## C   53   76 3252   27   14  0.04967855
-## D   68   14  127 2971   36  0.07618159
-## E   17   69   38   49 3434  0.04796230</code></pre>
-<pre class="r"><code># The predictions for the test data
-prf &lt;- predict(modFit,testAcc)
-
->>>>>>> update to randomForest
 plot(prf)</code></pre>
 <p><img src="data:image/png;base64,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" title alt width="384" /></p>
 <div id="resampling-accuracy-and-test-predictions" class="section level4">
 <h4>Resampling, Accuracy and Test Predictions</h4>
-<<<<<<< 8e3cfdba00a2858bb03da5a7e2fa034df02b0426
 <pre class="r"><code># Resampling, Accuracy, and confusion matrix
 
-=======
-<pre class="r"><code># Resampling and Accuracy for the lda model
->>>>>>> update to randomForest
 modFit</code></pre>
 <pre><code>## 
 ## Call:
@@ -192,11 +175,7 @@ modFit</code></pre>
 ## C   53   76 3252   27   14  0.04967855
 ## D   68   14  127 2971   36  0.07618159
 ## E   17   69   38   49 3434  0.04796230</code></pre>
-<<<<<<< 8e3cfdba00a2858bb03da5a7e2fa034df02b0426
 <pre class="r"><code># The test predictions
-=======
-<pre class="r"><code># The test predictions for the lda method were
->>>>>>> update to randomForest
 prf</code></pre>
 <pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
 ##  B  A  C  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
@@ -209,11 +188,7 @@ prf</code></pre>
 <p>The data was checked for correlated variables. Initially 3 highly correlated variables were found (cor&gt;0.9) which would bias the predictions so two were removed.</p>
 <p>A randomForest model was initially tried with caret/train/rf but was found to be very slow and crashed or ran out of memory.</p>
 <p>lda and rpart were also trialed and gave different results. Finally a randomForest model was selected and gave good results on the test data.</p>
-<<<<<<< 8e3cfdba00a2858bb03da5a7e2fa034df02b0426
 <p>Linear discriminant analysis (lda) finds linear combinations of the original variables (as in pca) that identify the “classe” groups. It performed poorly on the test data. The code for lda follows:</p>
-=======
-<p>Linear discriminant analysis (lda) finds linear combinations of the original variables (as in pca) that identify the “classe” groups. It performed poorly on the test data. Choosing the model based on the results of the test data is clearly overfitting! The code for lda follows:</p>
->>>>>>> update to randomForest
 <pre class="r"><code>modlda &lt;- train(classe~., data=trainAcc, method=&quot;lda&quot;)
 plda &lt;- predict(modlda,testAcc)</code></pre>
 <div id="cross-validation" class="section level3">
@@ -230,11 +205,7 @@ Tree methods were considered but caret/rf gave problems. Later randomForest was 
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<<<<<<< 8e3cfdba00a2858bb03da5a7e2fa034df02b0426
 <p>Both lda and randomForest methods shown gave different results on the test data. lda had a low accuracy. (Choosing the model based on the results of the test data is clearly overfitting!) Both were easy to use at an elementary level but reading the documentation and selecting options for each proved difficult.</p>
-=======
-<p>Both lda and randomForest methods shown gave different results on the test data. lda had a low accuracy. Both were easy to use at an elementary level but reading the documentation and selecting options for each proved difficult</p>
->>>>>>> update to randomForest
 <p>The use of caret/rf appears unsuited for student courses due to time and memory problems but randomForest was ok.</p>
 <div id="reference" class="section level3">
 <h3>Reference</h3>

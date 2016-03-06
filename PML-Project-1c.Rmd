@@ -1,0 +1,144 @@
+---
+title: "Practical Machine Learning Project"
+author: "duncan"
+date: "27 February 2016"
+output: html_document
+---
+## Summary
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit 6 participants collected data from accelerometers on the belt, forearm, arm, and dumbell. They were asked to perform 10 repetitions of barbell lifts  in 5 different ways ("classe" A to E) (ref [1]) 
+
+"classe"" A corresponds to the specified (correct) way, while the other 4 correspond to common mistakes. 
+
+The goals are:
+* to develop a model to predict the "classe" of each exercise from the accelerator values
+* to use cross validation and estimate the out-of-sample error
+* to use the model to predict the classe of 20 different test cases.
+
+This report was produced using Windows 8.1, RStudio (32 bit), Knit HTML with the output converted from HTML to pdf using PDFCreator.
+
+## Examination of the data 
+The training and test data files were downloaded (ref [2]) and are assumed to be in local storage as pml-training.csv and pml-testing.csv.
+
+### Read in data and extract non-NA accelerator columns
+```{r get_data, cache=FALSE, echo=TRUE}
+# getwd()
+library(caret); library(MASS); library(randomForest)
+Xtrain <- "./pml-training.csv"
+trainData  <- read.csv(Xtrain, header=TRUE)
+
+Xtest <- "./pml-testing.csv"
+testData  <- read.csv(Xtest, header=TRUE)   
+
+## Get variable names containng "accel"
+ind <- which(grepl("accel", names(trainData)))
+trainAcc <- trainData[,ind]
+
+# remove those starting with var and total
+var <- which(grepl("^var", names(trainAcc))  )
+trainAcc <- trainAcc[,-var]
+tot <- which(grepl("^total", names(trainAcc))  )
+trainAcc <- trainAcc[,-tot]
+
+ind <- which(grepl("accel", names(testData)))
+testAcc <- testData[,ind]
+var <- which(grepl("^var", names(testAcc))  )
+testAcc <- testAcc[,-var]
+tot <- which(grepl("^total", names(testAcc))  )
+testAcc <- testAcc[,-tot]
+
+# add outcome classe column to trainAcc
+trainAcc[,"classe"] <- trainData[,"classe"]
+set.seed(15651)
+```
+
+```{r check_cor, echo=TRUE, eval=TRUE}
+names(trainAcc)  # Here are the variables used
+# A check was made of highly correlated variables (cor>.9) 
+m <- abs(cor(trainAcc[,-13]))   # 13 is classe
+diag(m) <- 0
+w <- which(m>0.8,arr.ind=T)
+abs(cor(trainAcc[,c(2,3)]))
+#   2 were found and one was removed to avoid bias
+trainAcc <- trainAcc[,-3]
+testAcc <- testAcc[,-3]
+``` 
+
+## Development of the prediction model 
+Linear discriminant analysis (lda) tries to find the linear combinations of the original variables (as in pca) that identify the "classe" groups, Ref[3].  
+In comparison to PCA (an unsupervised learning technique not using class information) LDA is a supervised technique (uses class information), but both provide the possibility of dimensionality reduction, which is very useful for visualization  Ref[4]
+
+### Model using Linear discriminant analysis "lda"
+```{r lda_model, echo=TRUE}
+
+modlda <- train(classe~., data=trainAcc, method="lda")
+modlda
+
+plda <- predict(modlda,testAcc)
+nplda <- summary(plda)
+rmodlda <- modlda$results
+```
+## Investigation of other models
+The lda model was checked with and without the correlated variables.  Initially 3 highly correlated variables were found (cor>0.9) which would bias the predictions so two were removed.  An experiment was also done using Principal Component Analysis on the training data but was abandoned as it produces variables not in the test set.
+
+A randomForest model was tried, initially with caret, train, rf but was found to be very slow and crashed or ran out of memory.  
+The randomForest package and rpart were tried instead.  They each produced different results on the test data from lda (see Appendix).
+
+```{r Forest_model, echo=TRUE,eval=TRUE}
+# Trial of randomForest
+set.seed(15651)
+modFit <- randomForest(classe ~ ., data=trainAcc)
+print(modFit$confusion)
+
+prf <- predict(modFit,testAcc)
+prf
+summary(prf)
+
+```
+
+### cross validation
+Separate Training and testing data were provided.  Highly correlated variables were reduced to one.  lda used  Resampling: Bootstrapped (25 reps) 
+
+### expected out-of-sample error
+Accuracy as shown above for the lda model was
+
+#### Resampling results
+ *  Accuracy   Kappa      Accuracy SD  Kappa SD   
+ *  0.4399118  0.2831193  0.004348771  0.005330939
+
+### Rational for choices made
+The problem seemed to relate to accelerations of sensors so the variables were pruned to these.  No problems were identified with NAs but some variables were highly correlated so were further pruned.
+
+The problem was identified as a classification with 5 outcomes A - E so binary models were discounted.  lda 
+Tree methods were considered but caret/rf gave problems.  
+Initial experiments identified caret/lda as being simple to set up so this was chosen.  Later randomForest and rpart were tried and also worked. 
+
+### prediction for 20 test cases
+The test results for lda were 
+
+*  lda___________ `r plda` ____ counts__ `r nplda`
+
+## Conclusion
+Both methods gave different results on the test data. The differences have not been resolved.
+
+The use of caret/rf appears unsuited for student courses due to time and memory problems but randomForest seems ok.
+
+The accuracy figures for both methods need further improvement.
+
+## Appendix
+The test results for the lda method were 
+
+*  lda     `r plda`    counts `r nplda`
+
+```{r test_results, echo=TRUE, eval=FALSE}
+
+## Reference
+[1] http://groupware.les.inf.puc-rio.br/har (Source of data - Weight Lifting Exercise Dataset).
+
+[2] The training and test data were downloaded from:
+  https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+  https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+  
+[3] http://little-book-of-r-for-multivariate-analysis.readthedocs.org/en/latest/src/multivariateanalysis.html
+
+[4] https://tgmstat.wordpress.com/2014/01/15/computing-and-visualizing-lda-in-r/
+    

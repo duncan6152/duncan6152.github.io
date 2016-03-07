@@ -72,25 +72,23 @@ img {
 <h2>Summary</h2>
 <p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit 6 participants collected data from accelerometers on the belt, forearm, arm, and dumbell. They were asked to perform 10 repetitions of barbell lifts in 5 different ways (“classe” A to E) (ref [1])</p>
 <p>“classe”&quot; A corresponds to the specified (correct) way, while the other 4 correspond to common mistakes.</p>
-<p>The goals are: * to develop a model to predict the “classe” of each exercise from the accelerator values * to use cross validation and estimate the out-of-sample error * to use the model to predict the classe of 20 different test cases.</p>
-<p>This report was produced using Windows 8.1, RStudio (32 bit), Knit HTML with the output converted from HTML to pdf using PDFCreator.</p>
+<p>The goals are:</p>
+<ul>
+<li><p>to develop a model to predict the “classe” of each exercise from the accelerator values</p></li>
+<li><p>to use cross validation and estimate the out-of-sample error</p></li>
+<li><p>to use the model to predict the classe of 20 different test cases.</p></li>
+</ul>
+<p>This report was produced using Windows 8.1, RStudio (32 bit) and Knit HTML.</p>
 </div>
 <div id="examination-of-the-data" class="section level2">
 <h2>Examination of the data</h2>
 <p>The training and test data files were downloaded (ref [2]) and are assumed to be in local storage as pml-training.csv and pml-testing.csv.</p>
-<div id="read-in-data-and-extract-non-na-accelerator-columns" class="section level3">
-<h3>Read in data and extract non-NA accelerator columns</h3>
-<pre class="r"><code># getwd()
-library(caret); library(MASS); library(randomForest)</code></pre>
+<div id="read-in-data-and-extract-non-na-accelerator-columns" class="section level4">
+<h4>Read in data and extract non-NA accelerator columns</h4>
+<pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: lattice</code></pre>
 <pre><code>## Loading required package: ggplot2</code></pre>
-<pre><code>## randomForest 4.6-12</code></pre>
-<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre><code>## 
-## Attaching package: 'randomForest'</code></pre>
-<pre><code>## The following object is masked from 'package:ggplot2':
-## 
-##     margin</code></pre>
+<pre class="r"><code>library(MASS)</code></pre>
 <pre class="r"><code>Xtrain &lt;- &quot;./pml-training.csv&quot;
 trainData  &lt;- read.csv(Xtrain, header=TRUE)
 
@@ -138,11 +136,20 @@ testAcc &lt;- testAcc[,-3]</code></pre>
 </div>
 <div id="development-of-the-prediction-model" class="section level2">
 <h2>Development of the prediction model</h2>
-<p>Linear discriminant analysis (lda) tries to find the linear combinations of the original variables (as in pca) that identify the “classe” groups, Ref[3].<br />
-In comparison to PCA (an unsupervised learning technique not using class information) LDA is a supervised technique (uses class information), but both provide the possibility of dimensionality reduction, which is very useful for visualization Ref[4]</p>
+<p>Linear discriminant analysis (lda) finds linear combinations of the original variables (as in pca) that identify the “classe” groups, Ref[3].<br />
+In comparison to PCA (an unsupervised learning technique not using class information) LDA is a supervised technique (uses class information), but both provide for dimensionality reduction Ref[4]</p>
 <div id="model-using-linear-discriminant-analysis-lda" class="section level3">
 <h3>Model using Linear discriminant analysis “lda”</h3>
 <pre class="r"><code>modlda &lt;- train(classe~., data=trainAcc, method=&quot;lda&quot;)
+
+plda &lt;- predict(modlda,testAcc)
+nplda &lt;- summary(plda)
+# predicted number in each group
+plot(plda)</code></pre>
+<p><img src="data:image/png;base64,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" title alt width="384" /></p>
+<div id="resampling-accuracy-and-test-predictions" class="section level4">
+<h4>Resampling, Accuracy and Test Predictions</h4>
+<pre class="r"><code># Resampling and Accuracy for the lda model
 modlda</code></pre>
 <pre><code>## Linear Discriminant Analysis 
 ## 
@@ -159,78 +166,44 @@ modlda</code></pre>
 ##   0.4399118  0.2831193  0.004348771  0.005330939
 ## 
 ## </code></pre>
-<pre class="r"><code>plda &lt;- predict(modlda,testAcc)
-nplda &lt;- summary(plda)
-rmodlda &lt;- modlda$results</code></pre>
+<pre class="r"><code># The test predictions for the lda method were
+plda</code></pre>
+<pre><code>##  [1] B A A A A E D E A A C A E A A B A E B B
+## Levels: A B C D E</code></pre>
+</div>
 </div>
 </div>
 <div id="investigation-of-other-models" class="section level2">
 <h2>Investigation of other models</h2>
-<p>The lda model was checked with and without the correlated variables. Initially 3 highly correlated variables were found (cor&gt;0.9) which would bias the predictions so two were removed. An experiment was also done using Principal Component Analysis on the training data but was abandoned as it produces variables not in the test set.</p>
-<p>A randomForest model was tried, initially with caret, train, rf but was found to be very slow and crashed or ran out of memory.<br />
-The randomForest package and rpart were tried instead. They each produced different results on the test data from lda (see Appendix).</p>
+<p>The lda model was checked with and without the correlated variables. Initially 3 highly correlated variables were found (cor&gt;0.9) which would bias the predictions so two were removed.</p>
+<p>A randomForest model was tried, initially with caret/train/rf but was found to be very slow and crashed or ran out of memory.<br />
+randomForest (see below) and rpart were also trialed and gave results.</p>
 <pre class="r"><code># Trial of randomForest
+library(randomForest)
 set.seed(15651)
 modFit &lt;- randomForest(classe ~ ., data=trainAcc)
-print(modFit$confusion)</code></pre>
-<pre><code>##      A    B    C    D    E class.error
-## A 5386   29   75   82    8  0.03476703
-## B  150 3490   80   31   46  0.08085331
-## C   53   76 3252   27   14  0.04967855
-## D   68   14  127 2971   36  0.07618159
-## E   17   69   38   49 3434  0.04796230</code></pre>
-<pre class="r"><code>prf &lt;- predict(modFit,testAcc)
-prf</code></pre>
-<pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
-##  B  A  C  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
-## Levels: A B C D E</code></pre>
-<pre class="r"><code>summary(prf)</code></pre>
-<pre><code>## A B C D E 
-## 7 7 2 1 3</code></pre>
+print(modFit$confusion)
+predict(modFit,testAcc)</code></pre>
 <div id="cross-validation" class="section level3">
 <h3>cross validation</h3>
-<p>Separate Training and testing data were provided. Highly correlated variables were reduced to one. lda used Resampling: Bootstrapped (25 reps)</p>
-</div>
-<div id="expected-out-of-sample-error" class="section level3">
-<h3>expected out-of-sample error</h3>
-<p>Accuracy as shown above for the lda model was</p>
-<div id="resampling-results" class="section level4">
-<h4>Resampling results</h4>
-<ul>
-<li>Accuracy Kappa Accuracy SD Kappa SD<br />
-</li>
-<li>0.4399118 0.2831193 0.004348771 0.005330939</li>
-</ul>
-</div>
+<p>Separate Training and testing data were provided. Highly correlated variables were reduced to one. lda used Resampling:Bootstrapped as seen above</p>
 </div>
 <div id="rational-for-choices-made" class="section level3">
 <h3>Rational for choices made</h3>
 <p>The problem seemed to relate to accelerations of sensors so the variables were pruned to these. No problems were identified with NAs but some variables were highly correlated so were further pruned.</p>
-<p>The problem was identified as a classification with 5 outcomes A - E so binary models were discounted. lda Tree methods were considered but caret/rf gave problems.<br />
+<p>The problem was identified as a classification with 5 outcomes A - E so binary models were discounted.<br />
+Tree methods were considered but caret/rf gave problems.<br />
 Initial experiments identified caret/lda as being simple to set up so this was chosen. Later randomForest and rpart were tried and also worked.</p>
-</div>
-<div id="prediction-for-20-test-cases" class="section level3">
-<h3>prediction for 20 test cases</h3>
-<p>The test results for lda were</p>
-<ul>
-<li>lda___________ B, A, A, A, A, E, D, E, A, A, C, A, E, A, A, B, A, E, B, B ____ counts__ 10, 4, 1, 1, 4</li>
-</ul>
 </div>
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>Both methods gave different results on the test data. The differences have not been resolved.</p>
+<p>Both methods shown gave different results on the test data. The differences have not been resolved.</p>
 <p>The use of caret/rf appears unsuited for student courses due to time and memory problems but randomForest seems ok.</p>
 <p>The accuracy figures for both methods need further improvement.</p>
-</div>
-<div id="appendix" class="section level2">
-<h2>Appendix</h2>
-<p>The test results for the lda method were</p>
-<ul>
-<li>lda B, A, A, A, A, E, D, E, A, A, C, A, E, A, A, B, A, E, B, B counts 10, 4, 1, 1, 4</li>
-</ul>
-<pre class="r"><code>## Reference
-[1] http://groupware.les.inf.puc-rio.br/har (Source of data - Weight Lifting Exercise Dataset).
+<div id="reference" class="section level3">
+<h3>Reference</h3>
+<pre class="r"><code>[1] http://groupware.les.inf.puc-rio.br/har (Source of data - Weight Lifting Exercise Dataset).
 
 [2] The training and test data were downloaded from:
   https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
@@ -239,6 +212,7 @@ Initial experiments identified caret/lda as being simple to set up so this was c
 [3] http://little-book-of-r-for-multivariate-analysis.readthedocs.org/en/latest/src/multivariateanalysis.html
 
 [4] https://tgmstat.wordpress.com/2014/01/15/computing-and-visualizing-lda-in-r/</code></pre>
+</div>
 </div>
 
 
